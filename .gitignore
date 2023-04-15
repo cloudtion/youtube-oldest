@@ -66,5 +66,6 @@ node_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# environment variable files
 .env
+firebase-service-account.json

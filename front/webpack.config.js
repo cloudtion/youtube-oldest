@@ -34,9 +34,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'Youtube Oldest to Newest',
         }),
-        new Dotenv({
-            path: process.env.NODE_ENV==='development'? path.join(__dirname, 'dev.env') : path.join(__dirname, 'prod.env')
-        }),
+        new Dotenv(),
     ],
     output: {
         path: path.join(__dirname, '..', 'public'),
@@ -44,6 +42,7 @@ module.exports = {
     },
     devServer: {
         historyApiFallback: true,
+        port: 8080,
     },
 
 }

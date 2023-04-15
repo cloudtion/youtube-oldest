@@ -1,6 +1,5 @@
 
 import {useState, useEffect, useRef} from 'react';
-import axios, { AxiosRequestConfig } from 'axios';
 import { VideoMeta, VideoMetaListDetails } from './types';
 const fetchStream : any = require('fetch-readablestream');
 
@@ -115,7 +114,7 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
 
             setLoading(true);
             
-            fetchStream(`${process.env.VIDEOS_ENDPOINT}?channel_id=${encodeURIComponent(channel_id)}`)
+            fetchStream(`${process.env.VIDEOS_ENDPOINT}/${(channel_id)}`)
                 .then((response:any) => readAllChunks(response.body))
                 .then((chunks:any) =>{
                     
