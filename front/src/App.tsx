@@ -106,7 +106,7 @@ export default function App(){
             // This is a spacer to keep the columns of videos even.
             <div key={'padding-'+i} className='video-overview'></div>
         );
-    }console.log('rerender');
+    }
 
     return (
         <>
@@ -137,11 +137,11 @@ export default function App(){
 
                 </ContentWrapper>
             </Section>
-            
-            <Section >    
-                <ContentWrapper style={{backgroundColor: 'white'}}>
 
-                    <div id='video-list-toolbar'>
+            <Section style={{display: (loading||videos.length>0)? null:'none'}}>    
+                <ContentWrapper style={{backgroundColor: 'white'}}>
+                    
+                    <div id='video-list-toolbar' style={{display: videos.length>0? null:'none'}}>
 
                         <input 
                             type='search' 
@@ -165,6 +165,14 @@ export default function App(){
                                 video_els
                         }
                     </div>
+
+                    {
+                        videos.length>0&&filtered_videos.length===0?
+                        <h3 style={{color: 'gray'}}>No videos matched your search for this channel.</h3>
+                        :
+                        null
+                    }
+                    
 
                 </ContentWrapper>
             </Section>
