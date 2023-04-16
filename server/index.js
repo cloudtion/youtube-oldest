@@ -11,7 +11,7 @@ admin.initializeApp({
   databaseURL: process.env.FIREBASE_DB_URL
 });
 
-const PORT = 3030;
+const PORT = process.env.PORT;
 const CORS_WHITELIST = process.env.CORS_WHITELIST.split(',');
 
 
