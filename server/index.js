@@ -28,7 +28,7 @@ const corsOptions = {
 const app = express();
 app.use(cors(corsOptions));
 
-app.get('/videos/:channel_id', async (req, res)=>{
+app.get('/videos/:channel_id(*)', async (req, res)=>{
     
     try{
         
