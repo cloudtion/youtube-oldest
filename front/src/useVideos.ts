@@ -9,24 +9,11 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
 
     const [videos, setVideos] = useState<VideoMeta[]>([]);
     const videosRef = useRef<VideoMeta[]>([]);
-    const [channelUrl, _setChannelId] = useState<string>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const videoIntervalRef = useRef(null);
 
-    function setVideoDebounce(){
-
-        clearInterval(videoIntervalRef.current);
-
-        videoIntervalRef.current = setInterval(()=>{
-
-            setVideos([...videosRef.current]);
-            
-        }, 500);
-    }
 
     function readAllChunks(readableStream : any) {
-
-        setVideoDebounce();
 
         const reader = readableStream.getReader();
         const chunks : VideoMeta[] = [];
@@ -75,6 +62,8 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
                             
                             videosRef.current.push(parsed as VideoMeta);
                         }
+
+                        setVideos([...videosRef.current]);
                     }
 
                 }catch(err){
@@ -84,12 +73,15 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
             });            
 
             //clearInterval(videoIntervalRef.current);
-            //setVideos(videosRef.current);
-
+            //
             return pump();
           });
         }
-       
+
+        setVideos(videosRef.current);
+
+        setLoading(false);    
+
         return pump();
       }
        
@@ -98,6 +90,8 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
         
         try{   
 
+            videosRef.current = [];
+            
             const channel_videos = localStorage.getItem('channel_videos');
 
             if( channel_videos ){
@@ -114,14 +108,12 @@ export default function useVideos() : [VideoMeta[], (new_channel_url : string)=>
 
             setLoading(true);
             
-            fetchStream(`${process.env.VIDEOS_ENDPOINT}/${(channel_id)}`)
-                .then((response:any) => readAllChunks(response.body))
-                .then((chunks:any) =>{
-                    
-                    setVideos([...videosRef.current]);             
-                    setLoading(false);    
-                    clearInterval(videoIntervalRef.current);
-                });
+            const response : any = await fetchStream(`${process.env.VIDEOS_ENDPOINT}/${(channel_id)}`);
+            const chunks : any = await readAllChunks(response.body);
+
+            setVideos([...videosRef.current]);   
+            clearInterval(videoIntervalRef.current);          
+            setLoading(false);    
 
     
         }catch(err){

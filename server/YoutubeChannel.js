@@ -151,7 +151,7 @@ class YoutubeChannel {
                         continuation_items.forEach(ci=>{
             
                             const vid_meta = this.parseVideoFromRichItemRenderer(ci.richItemRenderer);
-                                console.log(vid_meta);
+
                             if( videosReceivedCallback ){
 
                                 videosReceivedCallback(vid_meta);

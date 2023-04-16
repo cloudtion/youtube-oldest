@@ -3,6 +3,7 @@ import useVideos from './useVideos';
 import ContentWrapper from './ContentWrapper';
 import Section from './Section';
 import VideoOverview from './VideoOverview';
+import LoadingText from './LoadingText';
 
 enum Sort {
     DateAscending = 1,
@@ -13,8 +14,8 @@ export default function App(){
 
     const [url, setUrl] = useState('');
     const [videos, setChannelId, loading] = useVideos();
-    
     const [sort, setSort] = useState(Sort.DateAscending);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const current_year = (new Date()).getFullYear();
 
@@ -28,7 +29,7 @@ export default function App(){
             
             const [,handleMatch,legacyChannelMatch] = match;
 
-            const new_channel_id = handleMatch?? legacyChannelMatch;
+            const new_channel_id = encodeURIComponent(handleMatch?? legacyChannelMatch);
 
             setChannelId(new_channel_id);
             
@@ -59,9 +60,10 @@ export default function App(){
         if( curr_url.pathname.length > 1 ){
 
             const youtube_url = 'https://youtube.com/'+curr_url.pathname.substring(1);
-
-            setUrl(youtube_url);
-            channelUrlGo(youtube_url);
+            const decoded_url = decodeURIComponent(youtube_url);
+            
+            setUrl(decoded_url);
+            channelUrlGo(decoded_url);
         }
 
         window.addEventListener('paste', paste);
@@ -70,8 +72,28 @@ export default function App(){
 
     }, []);
 
-    const sorted_videos = (sort===Sort.DateAscending)? [...videos] : [...videos].reverse();
+    const regex_epression = /[a-zA-Z0-9]+/g;
 
+    const filtered_videos = [...videos].filter(v=>{
+        
+        if( searchQuery.length < 1  ){
+            return true;
+        }
+
+        const title_match = v.title.match(regex_epression);
+        const search_match = searchQuery.match(regex_epression);
+
+        if( !title_match || !search_match ){
+            return false;
+        }
+
+        const title_str = title_match.join('').toLowerCase();
+
+        return title_str.includes(search_match.join('').toLowerCase());
+    });
+    
+    const sorted_videos = (sort===Sort.DateAscending)? filtered_videos : filtered_videos.reverse();
+    
     const video_els = [];
 
     for(let i=0;i<Math.ceil(sorted_videos.length/3)*3;i++){
@@ -84,17 +106,10 @@ export default function App(){
             // This is a spacer to keep the columns of videos even.
             <div key={'padding-'+i} className='video-overview'></div>
         );
-    }
+    }console.log('rerender');
 
-    
     return (
         <>
-            {
-               /* <div id='top-bar'>
-                <ContentWrapper>Test this out</ContentWrapper>
-                </div>*/
-            }
-
             <Section style={{backgroundColor: '#444444', paddingBottom: 60}}>
                 <ContentWrapper>
 
@@ -123,37 +138,34 @@ export default function App(){
                 </ContentWrapper>
             </Section>
             
-            
-            <Section style={{display: (video_els.length>0||loading)? null:'none'}}>    
+            <Section >    
                 <ContentWrapper style={{backgroundColor: 'white'}}>
 
-                    <select value={sort} onChange={e=> setSort(parseInt(e.target.value) as Sort)}>
-                        <option value={Sort.DateAscending}>Oldest to Newest</option>
-                        <option value={Sort.DateDescending}>Newest to Oldest</option>
-                    </select>
+                    <div id='video-list-toolbar'>
+
+                        <input 
+                            type='search' 
+                            placeholder='Search Videos'
+                            onBlur={e=> setSearchQuery(e.target.value)}
+                            onKeyDown={e=>{ e.key==='Enter' && (e.target as HTMLElement).blur()}}
+                        />
+
+                        <select value={sort} onChange={e=> setSort(parseInt(e.target.value) as Sort)}>
+                            <option value={Sort.DateAscending}>Oldest to Newest</option>
+                            <option value={Sort.DateDescending}>Newest to Oldest</option>
+                        </select>
+
+                    </div>
 
                     <div id='videos-list'>
                         { 
-                            video_els.length>0? 
-                                video_els
+                            loading? 
+                                <LoadingText/>
                                 : 
-                                <div className='loading'>
-                                    <span>L</span>
-                                    <span>o</span>
-                                    <span>a</span>
-                                    <span>d</span>
-                                    <span>i</span>
-                                    <span>n</span>
-                                    <span>g</span>
-                                    <span>.</span>
-                                    <span>.</span>
-                                    <span>.</span>
-                                </div>
-
+                                video_els
                         }
                     </div>
 
-                    
                 </ContentWrapper>
             </Section>
 
@@ -162,6 +174,7 @@ export default function App(){
                 <ContentWrapper>
 
                     { video_els.length>0? <hr/> : null }
+                    
                     <h2>What is this tool for?</h2>
                     <p>
                         Youtube recently removed the ability to sort a channel's videos from oldest to newest. At the time of writing ({ current_year }), there are only two sorting options, "Recently Uploaded" and "Popular".
@@ -192,9 +205,7 @@ export default function App(){
                 </ContentWrapper>
             </Section>
 
-            <footer>
-
-            </footer>
+            <footer></footer>
         </>
     )
 }
